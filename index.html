@@ -6,31 +6,65 @@
   <style>
     body {
       font-family: sans-serif;
-      max-width: 600px;
+      max-width: 700px;
       margin: 50px auto;
       padding: 20px;
+      background-color: #e0f7f7;
     }
+
     h1 {
       font-size: 24px;
+      margin-bottom: 30px;
+      text-align: center;
+      color: #333;
+    }
+
+    .card {
+      background: #f9fdfd;
+      border-radius: 16px;
+      padding: 20px 24px;
       margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-decoration: none;
+      color: #333;
+      transition: box-shadow 0.2s;
     }
-    ul {
-      padding-left: 1em;
+
+    .card:hover {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
     }
-    li {
-      margin-bottom: 10px;
+
+    .card-text {
+      flex: 1;
     }
-    small {
+
+    .card-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .card-date {
+      font-size: 13px;
       color: #666;
+    }
+
+    .card-arrow {
+      font-size: 16px;
+      margin-left: 10px;
+      color: #888;
     }
   </style>
 </head>
 <body>
   <h1>noteの最新お知らせ</h1>
-  <ul id="note-feed"></ul>
+  <div id="note-feed"></div>
 
   <script>
-    const rssUrl = "https://note.com/nelko/rss"; // ←あなたのnoteのRSS URLに書き換え
+    const rssUrl = "https://note.com/nelko/rss"; // ←ユーザー全体のRSSに修正済み
 
     fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(rssUrl))
       .then(response => response.json())
@@ -38,20 +72,33 @@
         const parser = new DOMParser();
         const xml = parser.parseFromString(data.contents, "text/xml");
         const items = xml.querySelectorAll("item");
-        const list = document.getElementById("note-feed");
+        const container = document.getElementById("note-feed");
 
         for (let i = 0; i < Math.min(5, items.length); i++) {
           const item = items[i];
           const title = item.querySelector("title").textContent;
           const link = item.querySelector("link").textContent;
           const pubDate = new Date(item.querySelector("pubDate").textContent);
-          const li = document.createElement("li");
-          li.innerHTML = `<a href="${link}" target="_blank">${title}</a><br><small>${pubDate.toLocaleDateString()}</small>`;
-          list.appendChild(li);
+          const dateStr = pubDate.toISOString().split("T")[0];
+
+          const a = document.createElement("a");
+          a.href = link;
+          a.target = "_blank";
+          a.className = "card";
+
+          a.innerHTML = `
+            <div class="card-text">
+              <div class="card-title">${title}</div>
+              <div class="card-date">${dateStr}</div>
+            </div>
+            <div class="card-arrow">▶︎</div>
+          `;
+
+          container.appendChild(a);
         }
       })
       .catch(error => {
-        document.getElementById("note-feed").innerHTML = "<li>お知らせの取得に失敗しました。</li>";
+        document.getElementById("note-feed").innerHTML = "<p>お知らせの取得に失敗しました。</p>";
         console.error(error);
       });
   </script>
