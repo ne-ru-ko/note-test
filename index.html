@@ -30,7 +30,7 @@
   <ul id="note-feed"></ul>
 
   <script>
-    const rssUrl = "https://note.com/nelko/m/m9c221f2bc384/rss"; // ←あなたのnoteのRSS URLに書き換え
+    const rssUrl = "https://note.com/nelko/rss"; // ←あなたのnoteのRSS URLに書き換え
 
     fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(rssUrl))
       .then(response => response.json())
