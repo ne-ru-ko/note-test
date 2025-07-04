@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
   <meta charset="UTF-8">
-  <title>note埋め込みテスト</title>
+  <title>note最新お知らせ</title>
   <style>
     body {
       font-family: sans-serif;
@@ -11,21 +10,50 @@
       margin: 50px auto;
       padding: 20px;
     }
-
-    iframe {
-      width: 100%;
-      height: 500px;
-      border: none;
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    ul {
+      padding-left: 1em;
+    }
+    li {
+      margin-bottom: 10px;
+    }
+    small {
+      color: #666;
     }
   </style>
 </head>
-
 <body>
-  <h1>noteのお知らせ</h1>
+  <h1>noteの最新お知らせ</h1>
+  <ul id="note-feed"></ul>
 
-  <iframe src="https://note.com/nelko/m/m9c221f2bc384/embed" style="border: none; max-width: 100%; height: auto;"
-    scrolling="no" frameborder="0"></iframe>
+  <script>
+    const rssUrl = "https://note.com/nelko/m/m9c221f2bc384/rss"; // ←あなたのnoteのRSS URLに書き換え
 
+    fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(rssUrl))
+      .then(response => response.json())
+      .then(data => {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data.contents, "text/xml");
+        const items = xml.querySelectorAll("item");
+        const list = document.getElementById("note-feed");
+
+        for (let i = 0; i < Math.min(5, items.length); i++) {
+          const item = items[i];
+          const title = item.querySelector("title").textContent;
+          const link = item.querySelector("link").textContent;
+          const pubDate = new Date(item.querySelector("pubDate").textContent);
+          const li = document.createElement("li");
+          li.innerHTML = `<a href="${link}" target="_blank">${title}</a><br><small>${pubDate.toLocaleDateString()}</small>`;
+          list.appendChild(li);
+        }
+      })
+      .catch(error => {
+        document.getElementById("note-feed").innerHTML = "<li>お知らせの取得に失敗しました。</li>";
+        console.error(error);
+      });
+  </script>
 </body>
-
 </html>
